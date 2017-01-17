@@ -144,7 +144,7 @@ trait GameDef {
 
     def getMove(m: Move): Block = try {
       m match {
-        case Left => try left
+        case Left => left
         case Right => right
         case Up => up
         case Down => down

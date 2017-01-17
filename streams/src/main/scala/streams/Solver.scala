@@ -29,7 +29,6 @@ trait Solver extends GameDef {
     * that are inside the terrain.
     */
   def neighborsWithHistory(b: Block, history: List[Move]): Stream[(Block, List[Move])] =
-  //b.legalNeighbors.toStream.map(x => (x._1, x._2 :: history))
     b.legalNeighbors.toStream.map(x => (x._1, x._2 :: history))
 
   /**
@@ -72,27 +71,48 @@ trait Solver extends GameDef {
     * of different paths - the implementation should naturally
     * construct the correctly sorted stream.
     */
-
+  //  def from(initial: Stream[(Block, List[Move])],
+  //           explored: Set[Block]): Stream[(Block, List[Move])] = {
+  //    println(initial)
+  //    val current = initial(explored.size - 1)
+  //    val allNeighbours = neighborsWithHistory(current._1, current._2)
+  //    val realNeighbours = newNeighborsOnly(allNeighbours, explored)
+  //    if (realNeighbours.isEmpty) initial
+  //    else
+  //      initial #::: realNeighbours #::: from(initial #::: realNeighbours, explored ++ realNeighbours.map(x => x._1))
+  //  }
   def from(initial: Stream[(Block, List[Move])],
            explored: Set[Block]): Stream[(Block, List[Move])] = {
-    val current = initial(explored.size - 1)
-    val allNeighbours = neighborsWithHistory(current._1, current._2)
-    val realNeighbours = newNeighborsOnly(allNeighbours, explored)
-    //println("Initial : " + initial)
-    //println("Initial : " + initial + "| explored : " + explored)
-    //println("Current : " + current + ", " + "Initial : " + initial)
-    //println("N: " + realNeighbours)
-    if (realNeighbours.isEmpty) initial
-    else {
-      val result = initial #::: realNeighbours
-      val newEx = explored ++ realNeighbours.map(x => x._1)
-      lazy val more = for {
-        n <- realNeighbours
-      } yield from(result #::: Stream(n), newEx)
-      realNeighbours.foldRight(Stream[(Block, List[Move])])((m, n) => n)
-      result #::: more.flatten
-    }
+    val neighbours = getNeighbours(initial, explored)
+    initial #::: neighbours
   }
+
+  def getNeighbours(locations: Stream[(Block, List[Move])],
+                    explored: Set[Block]): Stream[(Block, List[Move])] = {
+    val neighbours = locations.map(x => newNeighborsOnly(neighborsWithHistory(x._1, x._2), explored)).flatten
+    neighbours #::: getNeighbours(neighbours, explored ++ neighbours.map(x => x._1))
+  }
+
+  //  def from(initial: Stream[(Block, List[Move])],
+  //           explored: Set[Block]): Stream[(Block, List[Move])] = {
+  //    val current = initial(explored.size - 1)
+  //    val allNeighbours = neighborsWithHistory(current._1, current._2)
+  //    val realNeighbours = newNeighborsOnly(allNeighbours, explored)
+  //    //println("Initial : " + initial)
+  //    //println("Initial : " + initial + "| explored : " + explored)
+  //    //println("Current : " + current + ", " + "Initial : " + initial)
+  //    //println("N: " + realNeighbours)
+  //    if (realNeighbours.isEmpty) initial
+  //    else {
+  //      val result = initial #::: realNeighbours
+  //      val newEx = explored ++ realNeighbours.map(x => x._1)
+  //      lazy val more = for {
+  //        n <- realNeighbours
+  //      } yield from(result #::: Stream(n), newEx)
+  //      //realNeighbours.foldRight(Stream[(Block, List[Move])])((m, n) => n)
+  //      result #::: more.flatten
+  //    }
+  //  }
 
   //  def from(initial: Stream[(Block, List[Move])],
   //           explored: Set[Block]): Stream[(Block, List[Move])] = {
