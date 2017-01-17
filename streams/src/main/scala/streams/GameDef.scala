@@ -96,7 +96,7 @@ trait GameDef {
   case class Block(b1: Pos, b2: Pos) {
 
     // checks the requirement mentioned above
-      require(b1.row <= b2.row && b1.col <= b2.col, "Invalid block position: b1=" + b1 + ", b2=" + b2)
+    require(b1.row <= b2.row && b1.col <= b2.col, "Invalid block position: b1=" + b1 + ", b2=" + b2)
 
     /**
       * Returns a block where the `row` coordinates of `b1` and `b2` are
@@ -139,19 +139,19 @@ trait GameDef {
       val results = for {
         m <- List(Left, Right, Up, Down)
       } yield (getMove(m), m)
-      results.filter(x => x._1 != null)
+      results.filter(x => x._1 != None).map(x => (x._1.get, x._2))
     }
 
-    def getMove(m: Move): Block = try {
+    def getMove(m: Move): Option[Block] = try {
       m match {
-        case Left => left
-        case Right => right
-        case Up => up
-        case Down => down
+        case Left => Some(left)
+        case Right => Some(right)
+        case Up => Some(up)
+        case Down => Some(down)
         case _ => throw new UnsupportedOperationException
       }
     } catch {
-      case iae: IllegalArgumentException => null
+      case iae: IllegalArgumentException => None
     }
 
     /**

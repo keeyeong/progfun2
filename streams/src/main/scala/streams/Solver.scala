@@ -90,76 +90,9 @@ trait Solver extends GameDef {
   def getNeighbours(locations: Stream[(Block, List[Move])],
                     explored: Set[Block]): Stream[(Block, List[Move])] = {
     val neighbours = locations.map(x => newNeighborsOnly(neighborsWithHistory(x._1, x._2), explored)).flatten
-    neighbours #::: getNeighbours(neighbours, explored ++ neighbours.map(x => x._1))
+    if (neighbours.isEmpty) Stream.empty
+    else neighbours #::: getNeighbours(neighbours, explored ++ neighbours.map(x => x._1))
   }
-
-  //  def from(initial: Stream[(Block, List[Move])],
-  //           explored: Set[Block]): Stream[(Block, List[Move])] = {
-  //    val current = initial(explored.size - 1)
-  //    val allNeighbours = neighborsWithHistory(current._1, current._2)
-  //    val realNeighbours = newNeighborsOnly(allNeighbours, explored)
-  //    //println("Initial : " + initial)
-  //    //println("Initial : " + initial + "| explored : " + explored)
-  //    //println("Current : " + current + ", " + "Initial : " + initial)
-  //    //println("N: " + realNeighbours)
-  //    if (realNeighbours.isEmpty) initial
-  //    else {
-  //      val result = initial #::: realNeighbours
-  //      val newEx = explored ++ realNeighbours.map(x => x._1)
-  //      lazy val more = for {
-  //        n <- realNeighbours
-  //      } yield from(result #::: Stream(n), newEx)
-  //      //realNeighbours.foldRight(Stream[(Block, List[Move])])((m, n) => n)
-  //      result #::: more.flatten
-  //    }
-  //  }
-
-  //  def from(initial: Stream[(Block, List[Move])],
-  //           explored: Set[Block]): Stream[(Block, List[Move])] = {
-  //    val current = initial.head
-  //    val allNeighbours = neighborsWithHistory(current._1, current._2)
-  //    val realNeighbours = newNeighborsOnly(allNeighbours, explored).toList
-  //    val newInitial = (initial.toList ::: realNeighbours).toStream
-  //    println("New Initial => " + newInitial)
-  //    //println("Current => " + current + ", " + explored)
-  //    //println("All Neighbours => " + allNeighbours.toList)
-  //    println("Initial => " + initial)
-  //    println("Real Neighbours => " + realNeighbours)
-  //    if (realNeighbours.isEmpty) Stream.empty
-  //    else {
-  //      //      val m = for {
-  //      //        neighbour <- realNeighbours.take
-  //      //      } yield {
-  //      //        println("Neighbour = " + neighbour)
-  //      //        //from(neighbour #:: initial, explored + neighbour._1)
-  //      //        neighbour
-  //      //      }
-  //      //      m.take(3).foreach(x => println("m = " + x))
-  //      val more = realNeighbours.toList.map(x => {
-  //        println("neighbour = " + x)
-  //        x
-  //      })
-  //      //val result = initial #::: realNeighbours
-  //      //initial #::: realNeighbours #::: more.flatten
-  //      //println("Real Neighbours => " + realNeighbours)
-  //      //println("RESULT IS " + result)
-  //      //      initial #::: realNeighbours
-  ////      initial #::: realNeighbours
-  //      newInitial
-  //    }
-  //  }
-
-  //
-  //  def from(initial: Stream[(Block, List[Move])],
-  //           explored: Set[Block]): Stream[(Block, List[Move])] = {
-  //    val first = initial.head
-  //    val allNeighbours = neighborsWithHistory(first._1, first._2)
-  //    val realNeighbours = newNeighborsOnly(allNeighbours, explored)
-  //    val more = for {
-  //      neighbour <- realNeighbours
-  //    } yield from(Stream(neighbour), explored + neighbour._1)
-  //    first #:: realNeighbours #::: more.flatten
-  //  }
 
   /**
     * The stream of all paths that begin at the starting block.
@@ -181,7 +114,10 @@ trait Solver extends GameDef {
     * position.
     */
   lazy val solution: List[Move] = {
-    //println(pathsToGoal)
-    pathsToGoal(0)._2.reverse
+    val paths = pathsToGoal
+    println(paths)
+    if (paths.isEmpty) List.empty
+    else
+      pathsToGoal(0)._2.reverse
   }
 }
