@@ -9,12 +9,6 @@ import Prop._
 
 abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
-  lazy val genMap: Gen[Map[Int,Int]] = for {
-    k <- arbitrary[Int]
-    v <- arbitrary[Int]
-    m <- oneOf(const(Map.empty[Int,Int]), genMap)
-  } yield m.updated(k, v)
-
   lazy val genHeap: Gen[H] = for {
 	  i <- arbitrary[Int]
 	  d<-oneOf(const(empty), genHeap)
