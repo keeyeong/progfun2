@@ -9,12 +9,21 @@ import Prop._
 
 abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
-  lazy val genHeap: Gen[H] = ???
+  lazy val genMap: Gen[Map[Int,Int]] = for {
+    k <- arbitrary[Int]
+    v <- arbitrary[Int]
+    m <- oneOf(const(Map.empty[Int,Int]), genMap)
+  } yield m.updated(k, v)
+
+  lazy val genHeap: Gen[H] = for {
+	  i <- arbitrary[Int]
+	  d<-oneOf(const(empty), genHeap)
+  } yield insert(i,d)
+  
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
   property("gen1") = forAll { (h: H) =>
     val m = if (isEmpty(h)) 0 else findMin(h)
     findMin(insert(m, h)) == m
   }
-
 }
