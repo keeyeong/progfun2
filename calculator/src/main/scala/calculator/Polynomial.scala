@@ -5,7 +5,7 @@ object Polynomial {
                    c: Signal[Double]): Signal[Double] = Signal {
     // Δ = b² - 4ac
     val B = b()
-    B * B - 4 * a() * c()
+    (B * B) - (4 * a() * c())
   }
 
   def computeSolutions(a: Signal[Double], b: Signal[Double],
@@ -13,8 +13,9 @@ object Polynomial {
     // (-b ± √Δ) / 2a
     if (b() < 0) Set.empty
     else {
-      val pos = (-b() + delta()) / (2 * a())
-      val neg = (-b() - delta()) / (2 * a())
+      val pos = (-b() + Math.sqrt(delta())) / (2 * a())
+      val neg = (-b() - Math.sqrt(delta())) / (2 * a())
+      println(pos, neg)
       Set(pos, neg)
     }
   }
