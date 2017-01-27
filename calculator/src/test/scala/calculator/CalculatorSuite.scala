@@ -12,9 +12,9 @@ import TweetLength.MaxTweetLength
 @RunWith(classOf[JUnitRunner])
 class CalculatorSuite extends FunSuite with ShouldMatchers {
 
-  /******************
-   ** TWEET LENGTH **
-   ******************/
+  /** ****************
+    * * TWEET LENGTH **
+    * *****************/
 
   def tweetLength(text: String): Int =
     text.codePointCount(0, text.length)
@@ -51,4 +51,60 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     assert(resultRed2() == "red")
   }
 
+  /** ****************
+    * * CALCULATOR  **
+    * *****************/
+
+  trait testSet1 {
+    val map1 = Map(
+      "a" -> Signal(Literal(1.0).asInstanceOf[Expr]),
+      "b" -> Signal(Literal(2.0).asInstanceOf[Expr]),
+      "c" -> Signal(Literal(3.0).asInstanceOf[Expr]),
+      "d" -> Signal(Literal(4.0).asInstanceOf[Expr]),
+      "e" -> Signal(Ref("b").asInstanceOf[Expr]),
+      "f" -> Signal(Plus(Literal(1.0).asInstanceOf[Expr], Ref("a").asInstanceOf[Expr]).asInstanceOf[Expr]),
+      "g" -> Signal(Minus(Literal(1.0).asInstanceOf[Expr], Ref("a").asInstanceOf[Expr]).asInstanceOf[Expr]),
+      "h" -> Signal(Times(Ref("f").asInstanceOf[Expr], Ref("g").asInstanceOf[Expr]).asInstanceOf[Expr])
+    )
+  }
+
+  test("eval literals and references") {
+    new testSet1 {
+      assert(Calculator.eval(Literal(3.0), Map()) == 3.0)
+      assert(Calculator.eval(Ref("a"), map1) == 1.0)
+    }
+  }
+
+  test("eval literal arithmetic") {
+    new testSet1 {
+      assert(Calculator.eval(Plus(Literal(1.0).asInstanceOf[Expr], Literal(1.0).asInstanceOf[Expr]).asInstanceOf[Expr], Map()) == 2.0)
+      assert(Calculator.eval(Minus(Literal(2.0).asInstanceOf[Expr], Literal(1.0).asInstanceOf[Expr]).asInstanceOf[Expr], Map()) == 1.0)
+      assert(Calculator.eval(Times(Literal(2.0).asInstanceOf[Expr], Literal(2.0).asInstanceOf[Expr]).asInstanceOf[Expr], Map()) == 4.0)
+      assert(Calculator.eval(Divide(Literal(9.0).asInstanceOf[Expr], Literal(3.0).asInstanceOf[Expr]).asInstanceOf[Expr], Map()) == 3.0)
+    }
+  }
+
+  test("eval reference and literal arithmetic") {
+    new testSet1 {
+      assert(Calculator.eval(Plus(Literal(1.0).asInstanceOf[Expr], Ref("a").asInstanceOf[Expr]).asInstanceOf[Expr], map1) == 2.0)
+      assert(Calculator.eval(Minus(Literal(2.0).asInstanceOf[Expr], Ref("a").asInstanceOf[Expr]).asInstanceOf[Expr], map1) == 1.0)
+      assert(Calculator.eval(Times(Literal(2.0).asInstanceOf[Expr], Ref("b").asInstanceOf[Expr]).asInstanceOf[Expr], map1) == 4.0)
+      assert(Calculator.eval(Divide(Literal(9.0).asInstanceOf[Expr], Ref("c").asInstanceOf[Expr]).asInstanceOf[Expr], map1) == 3.0)
+    }
+  }
+
+  test("eval complex arithmetic") {
+    new testSet1 {
+      assert(Calculator.eval(Ref("f").asInstanceOf[Expr], map1) == 2.0)
+      assert(Calculator.eval(Ref("h").asInstanceOf[Expr], map1) == 0.0)
+    }
+  }
+
+  test("computeValues complex arithmetic") {
+    new testSet1 {
+      val results = Calculator.computeValues(map1)
+      assert(results.apply("f")() == 2.0)
+      assert(results.apply("h")() == 0.0)
+    }
+  }
 }
