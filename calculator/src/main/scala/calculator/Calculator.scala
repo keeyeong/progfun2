@@ -22,7 +22,7 @@ object Calculator {
 
   def eval(expr: Expr, references: Map[String, Signal[Expr]]): Double = expr match {
     case Literal(v) => v
-    case Ref(name) => eval(getReferenceExpr(name, references), references)
+    case Ref(name) => eval(getReferenceExpr(name, references), references - name)
     case Plus(a1, b1) => eval(a1, references) + eval(b1, references)
     case Minus(a2, b2) => eval(a2, references) - eval(b2, references)
     case Times(a3, b3) => eval(a3, references) * eval(b3, references)

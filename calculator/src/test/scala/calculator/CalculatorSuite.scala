@@ -66,6 +66,12 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
       "g" -> Signal(Minus(Literal(1.0).asInstanceOf[Expr], Ref("a").asInstanceOf[Expr]).asInstanceOf[Expr]),
       "h" -> Signal(Times(Ref("f").asInstanceOf[Expr], Ref("g").asInstanceOf[Expr]).asInstanceOf[Expr])
     )
+    val cyclic = Map(
+      "a" -> Signal(Ref("a").asInstanceOf[Expr]),
+      "b" -> Signal(Ref("b").asInstanceOf[Expr]),
+      "c" -> Signal(Ref("c").asInstanceOf[Expr]),
+      "d" -> Signal(Literal(4.0).asInstanceOf[Expr])
+    )
   }
 
   test("eval literals and references") {
@@ -100,11 +106,30 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     }
   }
 
+  test("eval cyclic detection") {
+    new testSet1 {
+      val results = Calculator.computeValues(cyclic)
+      assert(Calculator.eval(Ref("a").asInstanceOf[Expr], cyclic).isNaN)
+      assert(Calculator.eval(Ref("b").asInstanceOf[Expr], cyclic).isNaN)
+      assert(Calculator.eval(Ref("c").asInstanceOf[Expr], cyclic).isNaN)
+    }
+  }
+
   test("computeValues complex arithmetic") {
     new testSet1 {
       val results = Calculator.computeValues(map1)
       assert(results.apply("f")() == 2.0)
       assert(results.apply("h")() == 0.0)
+    }
+  }
+
+  test("computeValues cyclic detection") {
+    new testSet1 {
+      val results = Calculator.computeValues(cyclic)
+      assert(results.apply("a")().isNaN)
+      assert(results.apply("b")().isNaN)
+      assert(results.apply("c")().isNaN)
+      assert(results.apply("d")() == 4.0)
     }
   }
 }
